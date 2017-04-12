@@ -12,18 +12,52 @@ import {
 } from 'react-native';
 
 import { MonoText } from '../components/StyledText';
+import id from '../constants/ClientId';
 
 export default class HomeScreen extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      streams: [],
+    } 
+  }
+
   static route = {
     navigationBar: {
       visible: false,
     },
   };
 
+  componentWillMount() {
+    // make http request and populate state.streams with objects which contain
+    // the stream title, the stream URI, and (hopefully) a boolean of whether the 
+    // stream is currently live
+
+    // for now, populate dummy data:
+    const dreamkazper = {
+      name: 'DreamKazper',
+      id: 68624555,
+      uri: 'http://player.twitch.tv/?channel=dreamkazper'
+    };
+    const tviq = {
+      id: 27728003,
+      uri: 'http://player.twitch.tv/?channel=tvique'
+    };
+
+    // we're not going to invoke Array.prototype.push() on  this.state.streams directly because
+    // in React we should treat this.state as if it were immutable. We should always use
+    // this.setState() to mutate it
+
+    let arrCopy = this.state.streams.slice();
+    arrCopy.push(dreamkazper, tviq)
+
+    this.setState({streams: arrCopy});
+  }
+
+
   render() {
     return (
       <View style={styles.container}>
-
         <View style={styles.container}>
           <View style={styles.welcomeContainer}>
             <Image
@@ -32,16 +66,20 @@ export default class HomeScreen extends React.Component {
             />
             <Text style={styles.logoText}>Tournament Viewer</Text>
           </View>
+
           <ScrollView style={styles.container}>
-            <WebView
-              source={{uri: 'http://player.twitch.tv/?channel=tvique'}}
-              style={styles.stream}
-            />
-            <WebView
-              source={{uri: 'http://player.twitch.tv/?channel=dreamkazper'}}
-              style={styles.stream}
-            />
-          </ScrollView> 
+
+            {this.state.streams.map(stream => (
+              <View>
+                <Text style={styles.streamText}>{stream.name || 'N/A'}</Text>
+                <WebView
+                  source={{uri: stream.uri}}
+                  style={styles.stream}
+                />
+              </View>
+            ))}
+
+          </ScrollView>  
         </View>
 
         <View style={styles.tabBarInfoContainer}>
@@ -135,4 +173,9 @@ const styles = StyleSheet.create({
   stream: {
     height: 150,
   },
+  streamText: {
+    color: 'rgba(96,100,109, 1)',
+    alignItems: 'center',
+    fontSize: 13
+  }
 });
